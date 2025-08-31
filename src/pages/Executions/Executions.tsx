@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Play, Search, Filter, Clock, CheckCircle, XCircle, Loader, RotateCcw } from 'lucide-react';
+import { Play, Search, Filter, Clock, CheckCircle, XCircle, Loader, RotateCcw, GitBranch } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { formatDistanceToNow } from '../../utils/dateUtils';
 

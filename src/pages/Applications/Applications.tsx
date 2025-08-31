@@ -1,10 +1,14 @@
 import React, { useState } from 'react';
 import { Plus, Search, Server, Edit, Trash2, ExternalLink } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
+import ApplicationModal from './ApplicationModal';
+import { Application } from '../../types';
 
 export default function Applications() {
-  const { state } = useApp();
+  const { state, dispatch } = useApp();
   const [searchTerm, setSearchTerm] = useState('');
+  const [showModal, setShowModal] = useState(false);
+  const [editingApplication, setEditingApplication] = useState<Application | null>(null);
 
   const filteredApplications = state.applications.filter(app =>
     app.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -22,13 +26,42 @@ export default function Applications() {
     }
   };
 
+  const handleSaveApplication = (application: Application) => {
+    if (editingApplication) {
+      dispatch({ type: 'UPDATE_APPLICATION', payload: application });
+    } else {
+      dispatch({ type: 'ADD_APPLICATION', payload: application });
+    }
+    setShowModal(false);
+    setEditingApplication(null);
+  };
+
+  const handleEditApplication = (application: Application, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setEditingApplication(application);
+    setShowModal(true);
+  };
+
+  const handleDeleteApplication = (applicationId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (window.confirm('Are you sure you want to delete this application?')) {
+      dispatch({ type: 'DELETE_APPLICATION', payload: applicationId });
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold bg-gradient-to-r from-cyan-400 to-purple-500 bg-clip-text text-transparent">
           Applications
         </h1>
-        <button className="flex items-center px-4 py-2 bg-gradient-to-r from-cyan-600 to-purple-600 text-white rounded-lg font-medium hover:from-cyan-500 hover:to-purple-500 transition-all duration-200 shadow-lg hover:shadow-cyan-500/25">
+        <button 
+          onClick={() => {
+            setEditingApplication(null);
+            setShowModal(true);
+          }}
+          className="flex items-center px-4 py-2 bg-gradient-to-r from-cyan-600 to-purple-600 text-white rounded-lg font-medium hover:from-cyan-500 hover:to-purple-500 transition-all duration-200 shadow-lg hover:shadow-cyan-500/25"
+        >
           <Plus className="h-4 w-4 mr-2" />
           Add Application
         </button>
@@ -79,10 +112,16 @@ export default function Applications() {
               </a>
               
               <div className="flex items-center space-x-2">
-                <button className="p-2 text-gray-400 hover:text-cyan-400 transition-colors">
+                <button 
+                  onClick={(e) => handleEditApplication(app, e)}
+                  className="p-2 text-gray-400 hover:text-cyan-400 transition-colors"
+                >
                   <Edit className="h-4 w-4" />
                 </button>
-                <button className="p-2 text-gray-400 hover:text-red-400 transition-colors">
+                <button 
+                  onClick={(e) => handleDeleteApplication(app.id, e)}
+                  className="p-2 text-gray-400 hover:text-red-400 transition-colors"
+                >
                   <Trash2 className="h-4 w-4" />
                 </button>
               </div>
@@ -101,11 +140,25 @@ export default function Applications() {
               : 'Add your first application to start creating flows'
             }
           </p>
-          <button className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-cyan-600 to-purple-600 text-white rounded-lg font-medium hover:from-cyan-500 hover:to-purple-500 transition-all duration-200 shadow-lg hover:shadow-cyan-500/25">
+          <button 
+            onClick={() => setShowModal(true)}
+            className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-cyan-600 to-purple-600 text-white rounded-lg font-medium hover:from-cyan-500 hover:to-purple-500 transition-all duration-200 shadow-lg hover:shadow-cyan-500/25"
+          >
             <Plus className="h-4 w-4 mr-2" />
             Add First Application
           </button>
         </div>
+      )}
+
+      {showModal && (
+        <ApplicationModal
+          application={editingApplication}
+          onSave={handleSaveApplication}
+          onClose={() => {
+            setShowModal(false);
+            setEditingApplication(null);
+          }}
+        />
       )}
     </div>
   );

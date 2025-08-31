@@ -4,6 +4,7 @@ import { useApp } from '../../context/AppContext';
 
 export default function MetricsCards() {
   const { state } = useApp();
+  const { theme } = state;
   
   const totalExecutions = state.executions.length;
   const completedExecutions = state.executions.filter(e => e.status === 'completed').length;
@@ -56,10 +57,18 @@ export default function MetricsCards() {
   ];
 
   const colorClasses = {
-    cyan: 'from-cyan-600/20 to-cyan-400/10 border-cyan-500/30 text-cyan-400',
-    green: 'from-green-600/20 to-green-400/10 border-green-500/30 text-green-400',
-    purple: 'from-purple-600/20 to-purple-400/10 border-purple-500/30 text-purple-400',
-    amber: 'from-amber-600/20 to-amber-400/10 border-amber-500/30 text-amber-400'
+    cyan: theme === 'dark' 
+      ? 'from-cyan-600/20 to-cyan-400/10 border-cyan-500/30 text-cyan-400 bg-gray-800' 
+      : 'from-cyan-50 to-cyan-100 border-cyan-200 text-cyan-600 bg-white',
+    green: theme === 'dark' 
+      ? 'from-green-600/20 to-green-400/10 border-green-500/30 text-green-400 bg-gray-800' 
+      : 'from-green-50 to-green-100 border-green-200 text-green-600 bg-white',
+    purple: theme === 'dark' 
+      ? 'from-purple-600/20 to-purple-400/10 border-purple-500/30 text-purple-400 bg-gray-800' 
+      : 'from-purple-50 to-purple-100 border-purple-200 text-purple-600 bg-white',
+    amber: theme === 'dark' 
+      ? 'from-amber-600/20 to-amber-400/10 border-amber-500/30 text-amber-400 bg-gray-800' 
+      : 'from-amber-50 to-amber-100 border-amber-200 text-amber-600 bg-white'
   };
 
   return (
@@ -72,8 +81,12 @@ export default function MetricsCards() {
         >
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-400">{metric.title}</p>
-              <p className="text-2xl font-bold text-white mt-1">{metric.value}</p>
+              <p className={`text-sm font-medium ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
+                {metric.title}
+              </p>
+              <p className={`text-2xl font-bold mt-1 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
+                {metric.value}
+              </p>
             </div>
             <metric.icon className={`h-8 w-8 ${metric.color === 'cyan' ? 'text-cyan-400' : 
               metric.color === 'green' ? 'text-green-400' : 
@@ -86,7 +99,9 @@ export default function MetricsCards() {
             } font-medium`}>
               {metric.change}
             </span>
-            <span className="text-gray-400 ml-1">vs last week</span>
+            <span className={`ml-1 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
+              vs last week
+            </span>
           </div>
         </div>
       ))}

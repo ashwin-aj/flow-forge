@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useReducer, ReactNode } from 'react';
 import { mockFlows, mockExecutions, mockApplications, mockUsers } from '../data/mockData';
-import { Flow, FlowExecution, Application, User } from '../types';
+import { Flow, FlowExecution, Application, User, Theme } from '../types';
 
 interface AppState {
   flows: Flow[];
@@ -8,6 +8,7 @@ interface AppState {
   applications: Application[];
   users: User[];
   currentUser: User;
+  theme: Theme;
 }
 
 type AppAction = 
@@ -15,14 +16,19 @@ type AppAction =
   | { type: 'ADD_FLOW'; payload: Flow }
   | { type: 'DELETE_FLOW'; payload: string }
   | { type: 'UPDATE_EXECUTION'; payload: FlowExecution }
-  | { type: 'ADD_EXECUTION'; payload: FlowExecution };
+  | { type: 'ADD_EXECUTION'; payload: FlowExecution }
+  | { type: 'ADD_APPLICATION'; payload: Application }
+  | { type: 'UPDATE_APPLICATION'; payload: Application }
+  | { type: 'DELETE_APPLICATION'; payload: string }
+  | { type: 'TOGGLE_THEME' };
 
 const initialState: AppState = {
   flows: mockFlows,
   executions: mockExecutions,
   applications: mockApplications,
   users: mockUsers,
-  currentUser: mockUsers[0]
+  currentUser: mockUsers[0],
+  theme: 'dark'
 };
 
 const AppContext = createContext<{
@@ -60,6 +66,28 @@ function appReducer(state: AppState, action: AppAction): AppState {
       return {
         ...state,
         executions: [...state.executions, action.payload]
+      };
+    case 'ADD_APPLICATION':
+      return {
+        ...state,
+        applications: [...state.applications, action.payload]
+      };
+    case 'UPDATE_APPLICATION':
+      return {
+        ...state,
+        applications: state.applications.map(app => 
+          app.id === action.payload.id ? action.payload : app
+        )
+      };
+    case 'DELETE_APPLICATION':
+      return {
+        ...state,
+        applications: state.applications.filter(app => app.id !== action.payload)
+      };
+    case 'TOGGLE_THEME':
+      return {
+        ...state,
+        theme: state.theme === 'dark' ? 'light' : 'dark'
       };
     default:
       return state;

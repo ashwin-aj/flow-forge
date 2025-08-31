@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AppProvider } from './context/AppContext';
+import ThemeProvider from './components/ThemeProvider';
 import Layout from './components/Layout/Layout';
 import Dashboard from './pages/Dashboard/Dashboard';
 import Flows from './pages/Flows/Flows';
@@ -14,8 +15,8 @@ import './styles/animations.css';
 function App() {
   return (
     <AppProvider>
-      <Router>
-        <div className="min-h-screen bg-gray-900">
+      <ThemeProvider>
+        <Router>
           <Layout>
             <Routes>
               <Route path="/" element={<Dashboard />} />
@@ -27,8 +28,8 @@ function App() {
               <Route path="/users" element={<Users />} />
             </Routes>
           </Layout>
-        </div>
-      </Router>
+        </Router>
+      </ThemeProvider>
     </AppProvider>
   );
 }
