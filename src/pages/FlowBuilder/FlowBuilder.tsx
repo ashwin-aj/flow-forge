@@ -33,8 +33,8 @@ export default function FlowBuilder() {
         setFlow(existingFlow);
       }
     } else if (location.state?.flowData) {
-      // Pre-fill with SquashTM test case data
-      const { flowData, testCase } = location.state;
+      // Pre-fill with SquashTM test case data  
+      const { flowData } = location.state;
       setFlow(prevFlow => ({
         ...prevFlow,
         ...flowData,

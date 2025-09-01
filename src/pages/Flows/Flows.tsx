@@ -1,20 +1,28 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Search, Filter, GitBranch, Play, Edit, Trash2, TestTube, Menu, X } from 'lucide-react';
+import { Plus, Search, Filter, TestTube } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
-import { formatDistanceToNow } from '../../utils/dateUtils';
-import SquashTreeView from '../../components/SquashTreeView/SquashTreeView';
-import { SquashTreeNode } from '../../types/squash';
-import { useSquashIntegration } from '../../hooks/useSquashIntegration';
+import SquashGrid from '../../components/SquashGrid/SquashGrid';
+import { SquashTestCase } from '../../types/squash';
+import { useSquashGrid } from '../../hooks/useSquashGrid';
 import TestCaseTable from '../../components/TestCaseTable/TestCaseTable';
+import { generateFlowFromSquashTestCase } from '../../utils/testCaseHelpers';
 
 export default function Flows() {
   const { state, dispatch } = useApp();
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
-  const [isSquashTreeOpen, setIsSquashTreeOpen] = useState(false);
-  const { selectedTestCase, setSelectedTestCase, createFlowFromTestCase } = useSquashIntegration();
+  
+  const {
+    selectedTestCase,
+    setSelectedTestCase,
+    isGridOpen,
+    openGrid,
+    closeGrid,
+    handleTestCaseSelect,
+    getTestCaseStatus
+  } = useSquashGrid(state.flows);
 
   const filteredFlows = state.flows.filter(flow => {
     const matchesSearch = flow.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -43,12 +51,11 @@ export default function Flows() {
     }
   };
 
-  const handleTestCaseSelect = (testCase: SquashTreeNode) => {
-    setSelectedTestCase(testCase);
-    setIsSquashTreeOpen(false);
+  const handleSquashTestCaseSelect = (testCase: SquashTestCase) => {
+    handleTestCaseSelect(testCase);
     
     // Check if test case is already configured
-    const existingFlow = state.flows.find(flow => flow.squashTestCaseId === testCase.squashId);
+    const existingFlow = state.flows.find(flow => flow.squashTestCaseId === testCase.id);
     
     if (existingFlow) {
       // Navigate to existing flow with pre-filled data
@@ -62,9 +69,9 @@ export default function Flows() {
   const handleCreateFlowFromTestCase = () => {
     if (selectedTestCase) {
       try {
-        const flowData = createFlowFromTestCase(selectedTestCase);
+        const flowData = generateFlowFromSquashTestCase(selectedTestCase);
         // Navigate to flow builder with pre-filled data
-        navigate('/flows/builder', { state: { flowData, testCase: selectedTestCase } });
+        navigate('/flows/builder', { state: { flowData, squashTestCase: selectedTestCase } });
       } catch (error) {
         console.error('Error creating flow from test case:', error);
       }
@@ -76,17 +83,14 @@ export default function Flows() {
     navigate(`/flows/builder/${flow.id}`);
   };
 
-  const toggleSquashTree = () => {
-    setIsSquashTreeOpen(!isSquashTreeOpen);
-  };
-
   return (
     <div className="flex h-full">
-      {/* SquashTM Tree View Overlay */}
-      <SquashTreeView
-        isOpen={isSquashTreeOpen}
-        onClose={() => setIsSquashTreeOpen(false)}
-        onTestCaseSelect={handleTestCaseSelect}
+      {/* SquashTM Grid Overlay */}
+      <SquashGrid
+        isOpen={isGridOpen}
+        onClose={closeGrid}
+        onTestCaseSelect={handleSquashTestCaseSelect}
+        flows={state.flows}
       />
 
       {/* Main Content */}
@@ -98,7 +102,7 @@ export default function Flows() {
             </h1>
           </div>
           <button
-            onClick={toggleSquashTree}
+            onClick={openGrid}
             className="flex items-center px-4 py-2 bg-gradient-to-r from-cyan-600 to-purple-600 text-white rounded-lg font-medium hover:from-cyan-500 hover:to-purple-500 transition-all duration-200 shadow-lg hover:shadow-cyan-500/25"
           >
             <Plus className="h-4 w-4 mr-2" />
@@ -141,44 +145,44 @@ export default function Flows() {
 
         {/* Selected Test Case Info */}
         {selectedTestCase && (
-          <div className="bg-blue-900/20 border border-blue-500/30 rounded-lg p-4">
+          <div className="bg-green-900/20 border border-green-500/30 rounded-lg p-4">
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center space-x-2">
-                <TestTube className="h-4 w-4 text-blue-400" />
-                <span className="text-sm font-medium text-blue-300">Selected Test Case:</span>
+                <TestTube className="h-4 w-4 text-green-400" />
+                <span className="text-sm font-medium text-green-300">Selected Test Case:</span>
                 <span className="text-sm text-white">{selectedTestCase.name}</span>
               </div>
               <button
                 onClick={() => setSelectedTestCase(null)}
-                className="text-blue-400 hover:text-blue-300 transition-colors"
+                className="text-green-400 hover:text-green-300 transition-colors"
               >
                 <X className="h-4 w-4" />
               </button>
             </div>
-            {selectedTestCase.testCase && (
+            <div className="space-y-2">
               <div className="space-y-2">
-                <div className="text-xs text-blue-200">
-                  Path: {selectedTestCase.path} | Importance: {selectedTestCase.testCase.importance} | Status: {selectedTestCase.testCase.status}
+                <div className="text-xs text-green-200">
+                  ID: {selectedTestCase.id} | Reference: {selectedTestCase.reference} | Importance: {selectedTestCase.importance} | Status: {selectedTestCase.status}
                 </div>
-                {selectedTestCase.testCase.description && (
+                {selectedTestCase.description && (
                   <div className="text-xs text-gray-300">
-                    {selectedTestCase.testCase.description}
+                    {selectedTestCase.description}
                   </div>
                 )}
                 <div className="flex items-center space-x-2 pt-2">
                   <button
                     onClick={handleCreateFlowFromTestCase}
-                    className="flex items-center px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white text-xs rounded-lg transition-colors"
+                    className="flex items-center px-3 py-1.5 bg-green-600 hover:bg-green-500 text-white text-xs rounded-lg transition-colors"
                   >
                     <Plus className="h-3 w-3 mr-1" />
                     Create Flow
                   </button>
                   <span className="text-xs text-gray-400">
-                    {selectedTestCase.testCase.steps?.length || 0} steps
+                    {selectedTestCase.steps?.length || 0} steps
                   </span>
                 </div>
               </div>
-            )}
+            </div>
           </div>
         )}
       </div>

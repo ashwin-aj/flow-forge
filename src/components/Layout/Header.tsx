@@ -1,6 +1,7 @@
 import React from 'react';
 import { Menu, Bell, Search, User, Sun, Moon } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
+import SquashConnectionStatus from '../SquashConnectionStatus/SquashConnectionStatus';
 
 interface HeaderProps {
   onMenuClick: () => void;
@@ -52,6 +53,8 @@ export default function Header({ onMenuClick }: HeaderProps) {
           >
             {theme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
           </button>
+          
+          <SquashConnectionStatus />
           
           <button className="relative p-2 text-gray-400 hover:text-white transition-colors">
             <Bell className="h-5 w-5" />
