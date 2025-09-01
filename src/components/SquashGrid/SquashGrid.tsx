@@ -7,7 +7,7 @@ import { squashApiService } from '../../services/squashApiService';
 import { Flow } from '../../types';
 import { isTestCaseConfigured } from '../../utils/testCaseHelpers';
 import 'ag-grid-community/styles/ag-grid.css';
-import 'ag-grid-community/styles/ag-theme-alpine-dark.css';
+import 'ag-grid-community/dist/styles/ag-theme-alpine-dark.css';
 
 interface SquashGridProps {
   isOpen: boolean;
