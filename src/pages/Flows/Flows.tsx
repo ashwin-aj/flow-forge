@@ -1,14 +1,20 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Search, Filter, GitBranch, Play, Edit, Trash2 } from 'lucide-react';
+import { Plus, Search, Filter, GitBranch, Play, Edit, Trash2, TestTube, Menu, X } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { formatDistanceToNow } from '../../utils/dateUtils';
+import SquashTreeView from '../../components/SquashTreeView/SquashTreeView';
+import { SquashTreeNode } from '../../types/squash';
+import { useSquashIntegration } from '../../hooks/useSquashIntegration';
+import TestCaseTable from '../../components/TestCaseTable/TestCaseTable';
 
 export default function Flows() {
   const { state, dispatch } = useApp();
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [isSquashTreeOpen, setIsSquashTreeOpen] = useState(false);
+  const { selectedTestCase, setSelectedTestCase, createFlowFromTestCase } = useSquashIntegration();
 
   const filteredFlows = state.flows.filter(flow => {
     const matchesSearch = flow.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -37,20 +43,68 @@ export default function Flows() {
     }
   };
 
+  const handleTestCaseSelect = (testCase: SquashTreeNode) => {
+    setSelectedTestCase(testCase);
+    setIsSquashTreeOpen(false);
+    
+    // Check if test case is already configured
+    const existingFlow = state.flows.find(flow => flow.squashTestCaseId === testCase.squashId);
+    
+    if (existingFlow) {
+      // Navigate to existing flow with pre-filled data
+      navigate(`/flows/builder/${existingFlow.id}`);
+    } else {
+      // Create new flow from test case
+      handleCreateFlowFromTestCase();
+    }
+  };
+
+  const handleCreateFlowFromTestCase = () => {
+    if (selectedTestCase) {
+      try {
+        const flowData = createFlowFromTestCase(selectedTestCase);
+        // Navigate to flow builder with pre-filled data
+        navigate('/flows/builder', { state: { flowData, testCase: selectedTestCase } });
+      } catch (error) {
+        console.error('Error creating flow from test case:', error);
+      }
+    }
+  };
+
+  const handleTableTestCaseSelect = (flow: Flow) => {
+    // Navigate to flow builder for editing
+    navigate(`/flows/builder/${flow.id}`);
+  };
+
+  const toggleSquashTree = () => {
+    setIsSquashTreeOpen(!isSquashTreeOpen);
+  };
+
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold bg-gradient-to-r from-cyan-400 to-purple-500 bg-clip-text text-transparent">
-          Flows
-        </h1>
-        <button
-          onClick={() => navigate('/flows/builder')}
-          className="flex items-center px-4 py-2 bg-gradient-to-r from-cyan-600 to-purple-600 text-white rounded-lg font-medium hover:from-cyan-500 hover:to-purple-500 transition-all duration-200 shadow-lg hover:shadow-cyan-500/25"
-        >
-          <Plus className="h-4 w-4 mr-2" />
-          Create Flow
-        </button>
-      </div>
+    <div className="flex h-full">
+      {/* SquashTM Tree View Overlay */}
+      <SquashTreeView
+        isOpen={isSquashTreeOpen}
+        onClose={() => setIsSquashTreeOpen(false)}
+        onTestCaseSelect={handleTestCaseSelect}
+      />
+
+      {/* Main Content */}
+      <div className="flex-1 space-y-6">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-4">
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-cyan-400 to-purple-500 bg-clip-text text-transparent">
+              Test Cases
+            </h1>
+          </div>
+          <button
+            onClick={toggleSquashTree}
+            className="flex items-center px-4 py-2 bg-gradient-to-r from-cyan-600 to-purple-600 text-white rounded-lg font-medium hover:from-cyan-500 hover:to-purple-500 transition-all duration-200 shadow-lg hover:shadow-cyan-500/25"
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Configure Testcase
+          </button>
+        </div>
 
       <div className="flex flex-col sm:flex-row gap-4">
         <div className="relative flex-1">
@@ -79,91 +133,55 @@ export default function Flows() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredFlows.map((flow, index) => (
-          <div
-            key={flow.id}
-            className="bg-gray-800 border border-gray-700 rounded-xl p-6 cursor-pointer card-hover"
-            style={{ animationDelay: `${index * 100}ms` }}
-            onClick={() => navigate(`/flows/builder/${flow.id}`)}
-          >
-            <div className="flex items-start justify-between mb-4">
+      <TestCaseTable 
+        flows={filteredFlows}
+        onDeleteFlow={(flowId) => dispatch({ type: 'DELETE_FLOW', payload: flowId })}
+        onTestCaseSelect={handleTableTestCaseSelect}
+      />
+
+        {/* Selected Test Case Info */}
+        {selectedTestCase && (
+          <div className="bg-blue-900/20 border border-blue-500/30 rounded-lg p-4">
+            <div className="flex items-center justify-between mb-3">
               <div className="flex items-center space-x-2">
-                <GitBranch className="h-5 w-5 text-purple-400" />
-                <h3 className="font-semibold text-white">{flow.name}</h3>
+                <TestTube className="h-4 w-4 text-blue-400" />
+                <span className="text-sm font-medium text-blue-300">Selected Test Case:</span>
+                <span className="text-sm text-white">{selectedTestCase.name}</span>
               </div>
-              <span className={`px-2 py-1 rounded-full border text-xs font-medium capitalize ${getStatusColor(flow.status)}`}>
-                {flow.status}
-              </span>
-            </div>
-
-            <p className="text-sm text-gray-400 mb-4 line-clamp-2">{flow.description}</p>
-
-            <div className="space-y-3">
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-gray-500">Steps:</span>
-                <span className="text-cyan-400 font-medium">{flow.steps.length}</span>
-              </div>
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-gray-500">Last updated:</span>
-                <span className="text-gray-300">{formatDistanceToNow(flow.updatedAt)}</span>
-              </div>
-            </div>
-
-            <div className="flex items-center justify-between mt-6 pt-4 border-t border-gray-700">
               <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  navigate(`/flows/builder/${flow.id}`);
-                }}
-                className="flex items-center px-3 py-1 text-cyan-400 hover:text-cyan-300 transition-colors"
+                onClick={() => setSelectedTestCase(null)}
+                className="text-blue-400 hover:text-blue-300 transition-colors"
               >
-                <Edit className="h-4 w-4 mr-1" />
-                Edit
+                <X className="h-4 w-4" />
               </button>
-              
-              <div className="flex items-center space-x-2">
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    // Trigger execution
-                  }}
-                  className="flex items-center px-3 py-1 text-green-400 hover:text-green-300 transition-colors"
-                >
-                  <Play className="h-4 w-4 mr-1" />
-                  Run
-                </button>
-                <button
-                  onClick={(e) => handleDeleteFlow(flow.id, e)}
-                  className="flex items-center px-3 py-1 text-red-400 hover:text-red-300 transition-colors"
-                >
-                  <Trash2 className="h-4 w-4" />
-                </button>
-              </div>
             </div>
+            {selectedTestCase.testCase && (
+              <div className="space-y-2">
+                <div className="text-xs text-blue-200">
+                  Path: {selectedTestCase.path} | Importance: {selectedTestCase.testCase.importance} | Status: {selectedTestCase.testCase.status}
+                </div>
+                {selectedTestCase.testCase.description && (
+                  <div className="text-xs text-gray-300">
+                    {selectedTestCase.testCase.description}
+                  </div>
+                )}
+                <div className="flex items-center space-x-2 pt-2">
+                  <button
+                    onClick={handleCreateFlowFromTestCase}
+                    className="flex items-center px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white text-xs rounded-lg transition-colors"
+                  >
+                    <Plus className="h-3 w-3 mr-1" />
+                    Create Flow
+                  </button>
+                  <span className="text-xs text-gray-400">
+                    {selectedTestCase.testCase.steps?.length || 0} steps
+                  </span>
+                </div>
+              </div>
+            )}
           </div>
-        ))}
+        )}
       </div>
-
-      {filteredFlows.length === 0 && (
-        <div className="text-center py-12">
-          <GitBranch className="h-12 w-12 text-gray-600 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-400 mb-2">No flows found</h3>
-          <p className="text-gray-500 mb-6">
-            {searchTerm || statusFilter !== 'all' 
-              ? 'Try adjusting your search or filter criteria'
-              : 'Create your first flow to get started with orchestration'
-            }
-          </p>
-          <button
-            onClick={() => navigate('/flows/builder')}
-            className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-cyan-600 to-purple-600 text-white rounded-lg font-medium hover:from-cyan-500 hover:to-purple-500 transition-all duration-200 shadow-lg hover:shadow-cyan-500/25"
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            Create First Flow
-          </button>
-        </div>
-      )}
     </div>
   );
 }

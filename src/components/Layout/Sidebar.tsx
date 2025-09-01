@@ -18,7 +18,7 @@ interface SidebarProps {
 
 const navigation = [
   { name: 'Dashboard', href: '/', icon: LayoutDashboard },
-  { name: 'Flows', href: '/flows', icon: GitBranch },
+  { name: 'Test Cases', href: '/flows', icon: GitBranch },
   { name: 'Executions', href: '/executions', icon: Play },
   { name: 'Applications', href: '/applications', icon: Server },
   { name: 'Users', href: '/users', icon: Users },

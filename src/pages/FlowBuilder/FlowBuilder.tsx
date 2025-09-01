@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { Save, ArrowLeft, Plus, Play } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { Flow, FlowStep } from '../../types';
@@ -9,6 +9,7 @@ import StepModal from './StepModal';
 export default function FlowBuilder() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const { state, dispatch } = useApp();
   
   const [flow, setFlow] = useState<Flow>({
@@ -31,8 +32,18 @@ export default function FlowBuilder() {
       if (existingFlow) {
         setFlow(existingFlow);
       }
+    } else if (location.state?.flowData) {
+      // Pre-fill with SquashTM test case data
+      const { flowData, testCase } = location.state;
+      setFlow(prevFlow => ({
+        ...prevFlow,
+        ...flowData,
+        id: prevFlow.id, // Keep the generated ID
+        createdAt: prevFlow.createdAt,
+        updatedAt: prevFlow.updatedAt
+      }));
     }
-  }, [id, state.flows]);
+  }, [id, state.flows, location.state]);
 
   const handleSave = () => {
     const updatedFlow = {
