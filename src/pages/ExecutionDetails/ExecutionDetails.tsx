@@ -1,13 +1,14 @@
 import React from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useRouter } from 'next/navigation';
 import { ArrowLeft, Play, Clock, CheckCircle, XCircle, Loader, RotateCcw, ExternalLink } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { formatDistanceToNow } from '../../utils/dateUtils';
 import PipelineTimeline from './PipelineTimeline';
 
 export default function ExecutionDetails() {
-  const { id } = useParams();
-  const navigate = useNavigate();
+  const params = useParams();
+  const router = useRouter();
+  const id = params?.id as string;
   const { state } = useApp();
   
   const execution = state.executions.find(e => e.id === id);
@@ -18,7 +19,7 @@ export default function ExecutionDetails() {
         <Play className="h-12 w-12 text-gray-600 mx-auto mb-4" />
         <h3 className="text-lg font-medium text-gray-400 mb-2">Execution not found</h3>
         <button
-          onClick={() => navigate('/executions')}
+          onClick={() => router.push('/executions')}
           className="text-cyan-400 hover:text-cyan-300 transition-colors"
         >
           Back to executions

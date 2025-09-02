@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useRouter } from 'next/navigation';
 import { Play, Edit, Trash2, ChevronLeft, ChevronRight, GitBranch } from 'lucide-react';
 import { Flow } from '../../types';
 import { formatDistanceToNow } from '../../utils/dateUtils';
@@ -13,7 +13,7 @@ interface TestCaseTableProps {
 const ITEMS_PER_PAGE = 20;
 
 export default function TestCaseTable({ flows, onDeleteFlow, onTestCaseSelect }: TestCaseTableProps) {
-  const navigate = useNavigate();
+  const router = useRouter();
   const [currentPage, setCurrentPage] = useState(1);
 
   const totalPages = Math.ceil(flows.length / ITEMS_PER_PAGE);
@@ -42,7 +42,7 @@ export default function TestCaseTable({ flows, onDeleteFlow, onTestCaseSelect }:
     if (onTestCaseSelect) {
       onTestCaseSelect(flow);
     } else {
-      navigate(`/flows/builder/${flow.id}`);
+      router.push(`/flows/builder/${flow.id}`);
     }
   };
 
@@ -115,7 +115,7 @@ export default function TestCaseTable({ flows, onDeleteFlow, onTestCaseSelect }:
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          navigate(`/flows/builder/${flow.id}`);
+                          router.push(`/flows/builder/${flow.id}`);
                         }}
                         className="text-cyan-400 hover:text-cyan-300 transition-colors p-1"
                         title="Edit"

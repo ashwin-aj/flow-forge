@@ -1,5 +1,5 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useRouter } from 'next/navigation';
 import { Play, Clock, CheckCircle, XCircle, Loader, GitBranch } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { formatDistanceToNow } from '../../utils/dateUtils';
@@ -7,7 +7,7 @@ import { formatDistanceToNow } from '../../utils/dateUtils';
 export default function RecentExecutions() {
   const { state } = useApp();
   const { theme } = state;
-  const navigate = useNavigate();
+  const router = useRouter();
   
   const recentExecutions = [...state.executions]
     .sort((a, b) => new Date(b.startTime).getTime() - new Date(a.startTime).getTime())
@@ -61,7 +61,7 @@ export default function RecentExecutions() {
           Recent Executions
         </h2>
         <button 
-          onClick={() => navigate('/executions')}
+          onClick={() => router.push('/executions')}
           className="text-sm text-cyan-400 hover:text-cyan-300 transition-colors"
         >
           View all
@@ -78,7 +78,7 @@ export default function RecentExecutions() {
                 : 'bg-gray-50 border-gray-200 hover:bg-gray-100'
             }`}
             style={{ animationDelay: `${index * 100}ms` }}
-            onClick={() => navigate(`/executions/${execution.id}`)}
+            onClick={() => router.push(`/executions/${execution.id}`)}
           >
             <div className="flex items-center space-x-4">
               {getStatusIcon(execution.status)}

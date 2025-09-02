@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useRouter } from 'next/navigation';
 import { Play, Search, Filter, Clock, CheckCircle, XCircle, Loader, RotateCcw, GitBranch } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { formatDistanceToNow } from '../../utils/dateUtils';
 
 export default function Executions() {
   const { state } = useApp();
-  const navigate = useNavigate();
+  const router = useRouter();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
 
@@ -142,7 +142,7 @@ export default function Executions() {
                   key={execution.id}
                   className="hover:bg-gray-700/30 transition-colors cursor-pointer"
                   style={{ animationDelay: `${index * 50}ms` }}
-                  onClick={() => navigate(`/executions/${execution.id}`)}
+                  onClick={() => router.push(`/executions/${execution.id}`)}
                 >
                   <td className="px-6 py-4">
                     <div className="flex items-center">

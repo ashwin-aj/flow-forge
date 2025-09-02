@@ -1,5 +1,5 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useRouter } from 'next/navigation';
 import { GitBranch, Play, Users, Calendar } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { formatDistanceToNow } from '../../utils/dateUtils';
@@ -7,7 +7,7 @@ import { formatDistanceToNow } from '../../utils/dateUtils';
 export default function ActiveFlows() {
   const { state } = useApp();
   const { theme } = state;
-  const navigate = useNavigate();
+  const router = useRouter();
   
   const activeFlows = state.flows.filter(flow => flow.status === 'active');
 
@@ -25,7 +25,7 @@ export default function ActiveFlows() {
           Active Flows
         </h2>
         <button 
-          onClick={() => navigate('/flows')}
+          onClick={() => router.push('/flows')}
           className="text-sm text-purple-400 hover:text-purple-300 transition-colors"
         >
           Manage flows
@@ -42,7 +42,7 @@ export default function ActiveFlows() {
                 : 'bg-gray-50 border-gray-200 hover:bg-gray-100'
             }`}
             style={{ animationDelay: `${index * 100}ms` }}
-            onClick={() => navigate(`/flows/builder/${flow.id}`)}
+            onClick={() => router.push(`/flows/builder/${flow.id}`)}
           >
             <div className="flex items-start justify-between">
               <div className="flex-1">

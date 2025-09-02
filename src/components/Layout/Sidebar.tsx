@@ -1,5 +1,6 @@
 import React from 'react';
-import { NavLink } from 'react-router-dom';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { useApp } from '../../context/AppContext';
 import { 
   LayoutDashboard, 
@@ -27,6 +28,7 @@ const navigation = [
 export default function Sidebar({ isOpen }: SidebarProps) {
   const { state } = useApp();
   const { theme } = state;
+  const pathname = usePathname();
 
   return (
     <div className={`${isOpen ? 'w-64' : 'w-20'} transition-all duration-300 ease-in-out flex flex-col ${
@@ -47,22 +49,20 @@ export default function Sidebar({ isOpen }: SidebarProps) {
       
       <nav className="flex-1 px-4 py-6 space-y-2">
         {navigation.map((item) => (
-          <NavLink
+          <Link
             key={item.name}
-            to={item.href}
-            className={({ isActive }) =>
-              `flex items-center px-3 py-3 rounded-lg text-sm font-medium transition-all duration-200 group ${
-                isActive
-                  ? 'bg-gradient-to-r from-cyan-600/20 to-purple-600/20 text-cyan-400 shadow-lg shadow-cyan-500/20'
-                  : theme === 'dark' 
-                    ? 'text-gray-300 hover:bg-gray-700 hover:text-white'
-                    : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
-              }`
-            }
+            href={item.href}
+            className={`flex items-center px-3 py-3 rounded-lg text-sm font-medium transition-all duration-200 group ${
+              pathname === item.href
+                ? 'bg-gradient-to-r from-cyan-600/20 to-purple-600/20 text-cyan-400 shadow-lg shadow-cyan-500/20'
+                : theme === 'dark' 
+                  ? 'text-gray-300 hover:bg-gray-700 hover:text-white'
+                  : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+            }`}
           >
             <item.icon className={`h-5 w-5 ${isOpen ? 'mr-3' : 'mx-auto'} transition-transform group-hover:scale-110`} />
             {isOpen && item.name}
-          </NavLink>
+          </Link>
         ))}
       </nav>
 

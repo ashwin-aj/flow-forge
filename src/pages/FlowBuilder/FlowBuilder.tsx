@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate, useLocation } from 'react-router-dom';
+import { useParams, useRouter } from 'next/navigation';
 import { Save, ArrowLeft, Plus, Play } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { Flow, FlowStep } from '../../types';
@@ -7,9 +7,9 @@ import FlowStepCard from './FlowStepCard';
 import StepModal from './StepModal';
 
 export default function FlowBuilder() {
-  const { id } = useParams();
-  const navigate = useNavigate();
-  const location = useLocation();
+  const params = useParams();
+  const router = useRouter();
+  const id = params?.id?.[0];
   const { state, dispatch } = useApp();
   
   const [flow, setFlow] = useState<Flow>({
@@ -32,18 +32,8 @@ export default function FlowBuilder() {
       if (existingFlow) {
         setFlow(existingFlow);
       }
-    } else if (location.state?.flowData) {
-      // Pre-fill with SquashTM test case data  
-      const { flowData } = location.state;
-      setFlow(prevFlow => ({
-        ...prevFlow,
-        ...flowData,
-        id: prevFlow.id, // Keep the generated ID
-        createdAt: prevFlow.createdAt,
-        updatedAt: prevFlow.updatedAt
-      }));
     }
-  }, [id, state.flows, location.state]);
+  }, [id, state.flows]);
 
   const handleSave = () => {
     const updatedFlow = {
@@ -58,7 +48,7 @@ export default function FlowBuilder() {
       dispatch({ type: 'ADD_FLOW', payload: updatedFlow });
     }
 
-    navigate('/flows');
+    router.push('/flows');
   };
 
   const handleAddStep = (step: FlowStep) => {
@@ -91,7 +81,7 @@ export default function FlowBuilder() {
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-4">
           <button
-            onClick={() => navigate('/flows')}
+            onClick={() => router.push('/flows')}
             className="p-2 text-gray-400 hover:text-white transition-colors"
           >
             <ArrowLeft className="h-5 w-5" />

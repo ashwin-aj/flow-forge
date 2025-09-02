@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useRouter } from 'next/navigation';
 import { Plus, Search, Filter, TestTube } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import SquashGrid from '../../components/SquashGrid/SquashGrid';
@@ -10,7 +10,7 @@ import { generateFlowFromSquashTestCase } from '../../utils/testCaseHelpers';
 
 export default function Flows() {
   const { state, dispatch } = useApp();
-  const navigate = useNavigate();
+  const router = useRouter();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   
@@ -59,7 +59,7 @@ export default function Flows() {
     
     if (existingFlow) {
       // Navigate to existing flow with pre-filled data
-      navigate(`/flows/builder/${existingFlow.id}`);
+      router.push(`/flows/builder/${existingFlow.id}`);
     } else {
       // Create new flow from test case
       handleCreateFlowFromTestCase();
@@ -70,8 +70,17 @@ export default function Flows() {
     if (selectedTestCase) {
       try {
         const flowData = generateFlowFromSquashTestCase(selectedTestCase);
-        // Navigate to flow builder with pre-filled data
-        navigate('/flows/builder', { state: { flowData, squashTestCase: selectedTestCase } });
+        // Create new flow and navigate to builder
+        const newFlow: Flow = {
+          id: `flow-${Date.now()}`,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          steps: [],
+          ...flowData
+        } as Flow;
+        
+        dispatch({ type: 'ADD_FLOW', payload: newFlow });
+        router.push(`/flows/builder/${newFlow.id}`);
       } catch (error) {
         console.error('Error creating flow from test case:', error);
       }
@@ -80,7 +89,7 @@ export default function Flows() {
 
   const handleTableTestCaseSelect = (flow: Flow) => {
     // Navigate to flow builder for editing
-    navigate(`/flows/builder/${flow.id}`);
+    router.push(`/flows/builder/${flow.id}`);
   };
 
   return (

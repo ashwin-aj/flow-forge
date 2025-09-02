@@ -10,14 +10,14 @@ export default function ThemeProvider({ children }: ThemeProviderProps) {
   const { theme } = state;
 
   useEffect(() => {
-    document.documentElement.classList.toggle('dark', theme === 'dark');
+    if (typeof document !== 'undefined') {
+      document.documentElement.classList.toggle('dark', theme === 'dark');
+    }
   }, [theme]);
 
   return (
-    <div className={`min-h-screen transition-colors duration-300 ${
-      theme === 'dark' ? 'bg-gray-900' : 'bg-gray-50'
-    }`}>
+    <>
       {children}
-    </div>
+    </>
   );
 }
