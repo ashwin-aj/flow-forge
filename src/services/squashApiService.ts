@@ -16,7 +16,8 @@ interface RetryConfig {
 }
 
 class SquashApiService {
-  private baseUrl = 'https://demo.squashtest.org/squash/api/rest/latest';
+  // private baseUrl = 'https://demo.squashtest.org/squash/api/rest/latest';
+  private baseUrl = 'http://localhost:5173/api';
   private defaultTimeout = 10000; // 10 seconds
   private globalTimeout = 30000; // 30 seconds
   private retryConfig: RetryConfig = {
